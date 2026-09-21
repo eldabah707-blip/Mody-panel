@@ -873,6 +873,285 @@ async function refreshCommunityProfiles(){
   if(targets[page])document.getElementById(targets[page])?.scrollIntoView({behavior:"smooth",block:"start"});
   else if(page==="Arena")challenge();
 }
+
+
+const GAME_GUIDE_DATA={
+  characters:["Ray","Morse","Nero","Rin","Oscar","Kassie","Kairos","Ryden","Ignis","Suzy","Sonia","Orion","Alok","Chrono","Homer","Wukong","Skyler","Koda"],
+  pets:["Kactus","Fang","Hoot","Finn","Zasil","Arvon","Flash","Yeti","Agent Hop","Sensei Tig","Dr. Beanie","Moony","Dreki","Detective Panda","Shiba","Falco"],
+  emotes:["رقصة الفريق","رقصة الاحتفال","إيموت الترحيب","إيموت التصفيق","إيموت النصر","إيموت الضحك","إيموت الرقص"]
+};
+
+const CHARACTER_INFO={
+ Ray:{bio:"The Watchman",skill:"Watchman",desc:"قدرة شخصية مرتبطة بالمراقبة والبقاء."},
+ Morse:{bio:"The Untraceable",skill:"قدرة خاصة",desc:"قدرة شخصية مخصصة لأسلوب لعب مراوغ."},
+ Nero:{bio:"Dreamsmith",skill:"Cryo Mind",desc:"قدرة نشطة مرتبطة بالتحكم في المساحة."},
+ Rin:{bio:"Jade Ninja",skill:"قدرة خاصة",desc:"قدرة شخصية مرتبطة بأسلوب النينجا."},
+ Oscar:{bio:"Night Vigilante",skill:"قدرة خاصة",desc:"قدرة شخصية مرتبطة بالحركة والمطاردة."},
+ Kassie:{bio:"Doctor Maniac",skill:"قدرة خاصة",desc:"قدرة شخصية مرتبطة بالدعم."},
+ Kairos:{bio:"Dual Guardian",skill:"قدرة خاصة",desc:"قدرة شخصية مرتبطة بتغيير أسلوب اللعب."},
+ Ryden:{bio:"Inventive genius",skill:"قدرة خاصة",desc:"قدرة شخصية مرتبطة بالابتكار."},
+ Ignis:{bio:"Untamed Flame",skill:"قدرة خاصة",desc:"قدرة شخصية مرتبطة بالطاقة النارية."},
+ Suzy:{bio:"Shadow Assassin",skill:"Money Mark",desc:"قدرة مرتبطة بالمكافآت والعلامات."},
+ Sonia:{bio:"Nano Scientist",skill:"Nano Lifeshield",desc:"قدرة مرتبطة بالحماية بعد تلقي ضرر كبير."},
+ Orion:{bio:"The Fist of Vengeance",skill:"Crimson Crush",desc:"قدرة نشطة مرتبطة بالحماية والحركة."},
+ Alok:{bio:"DJ / Support",skill:"Drop the Beat",desc:"هالة تساعد على الحركة واستعادة الصحة."},
+ Chrono:{bio:"Time Traveler",skill:"Time Turner",desc:"مجال دفاعي يساعد على النجاة."},
+ Homer:{bio:"Tech Genius",skill:"Senses Shockwave",desc:"قدرة تعتمد على طائرة مسيّرة وتأثير قريب."},
+ Wukong:{bio:"The Monkey King",skill:"Camouflage",desc:"قدرة تحول مؤقتة تساعد على تغيير أسلوب اللعب."},
+ Skyler:{bio:"Riptide Rhythm",skill:"Riptide Rhythm",desc:"قدرة صوتية تؤثر على جدران Gloo."},
+ Koda:{bio:"Arctic Explorer",skill:"Aurora Vision",desc:"قدرة مرتبطة بالرؤية والمعلومات."}
+};
+
+const PET_INFO={
+ Kactus:{skill:"Recover",desc:"يستعيد EP عندما يبقى صاحبه ثابتًا."},
+ Fang:{skill:"Wolf Pact",desc:"قدرة دعم مرتبطة باستعادة الموارد بعد سقوط زميل."},
+ Hoot:{skill:"Far-sighted",desc:"يحسن مدى ومدة مسح العناصر والمهارات."},
+ Finn:{skill:"Dash Splash",desc:"دفعة سرعة عند حدث إقصاء قريب."},
+ Zasil:{skill:"قدرة الحيوان الأليف",desc:"معلومات المهارة تحتاج مراجعة رسمية قبل عرض التفاصيل الدقيقة."},
+ Arvon:{skill:"قدرة الحيوان الأليف",desc:"معلومات المهارة تحتاج مراجعة رسمية قبل عرض التفاصيل الدقيقة."},
+ Flash:{skill:"Steel Shell",desc:"يقلل الضرر القادم من الخلف."},
+ Yeti:{skill:"Frozen Fortress",desc:"يقلل الضرر الناتج عن المتفجرات."},
+ "Agent Hop":{skill:"Bouncing Bonus",desc:"قدرة دعم مرتبطة بالمكافآت."},
+ "Sensei Tig":{skill:"Nimble Ninja",desc:"قدرة مرتبطة بالحركة والبقاء."},
+ "Dr. Beanie":{skill:"Hat Trick",desc:"قدرة دعم للحركة."},
+ Moony:{skill:"Paranormal Protection",desc:"قدرة دعم مرتبطة بالحماية."},
+ Dreki:{skill:"Dragon Glare",desc:"حيوان أليف بقدرة مساعدة في تتبع المعلومات داخل المباراة."},
+ "Detective Panda":{skill:"Panda's Blessings",desc:"قدرة دعم مرتبطة باستعادة الموارد."},
+ Shiba:{skill:"Mushroom Sense",desc:"يساعد على تحديد الفطر القريب."},
+ Falco:{skill:"Skyline Spree",desc:"يساعد الفريق أثناء الهبوط بالمظلة."}
+};
+
+// Verified against Garena's official character/patch documentation.
+// Only characters classified as Active Skills can appear in the Active slot.
+const ACTIVE_CHARACTERS=[
+  "Ray","Morse","Nero","Rin","Oscar","Kassie","Ryden","Ignis","Orion",
+  "Alok","Chrono","Homer","Wukong","Skyler","Koda","Dimitri","Tatsuya",
+  "Santino","Kenta","A124","Steffie","Clu","Xayne","Dimitri"
+];
+
+const PASSIVE_CHARACTERS=[
+  "Kairos","Suzy","Sonia","Hayato","Andrew","Rafael","Moco","Jota","Kelly",
+  "Laura","Maxim","Miguel","Nikita","Olivia","Paloma","Shirou","Kapella",
+  "Dasha","Luqueta","Leon","Thiva","Maro","D-Bee","Otho","Nairi","Iris",
+  "Homer","K","Joseph","Ford","Caroline","Misha","Wolfrahh","Antonio",
+  "Moco","Nikita","Clu","Nulla","Primis"
+];
+
+const ALL_SKILL_DATA={
+  "Ray":{type:"active",skill:"Raven Eye"},
+  "Morse":{type:"active",skill:"Untraceable"},
+  "Nero":{type:"active",skill:"Cryo Mind"},
+  "Rin":{type:"active",skill:"Jade Ninja"},
+  "Oscar":{type:"active",skill:"Valiant Dash"},
+  "Kassie":{type:"active",skill:"Electro Therapy"},
+  "Ryden":{type:"active",skill:"Spider Trap"},
+  "Ignis":{type:"active",skill:"Flame Mirage"},
+  "Orion":{type:"active",skill:"Crimson Crush"},
+  "Alok":{type:"active",skill:"Drop the Beat"},
+  "Chrono":{type:"active",skill:"Time Turner"},
+  "Homer":{type:"active",skill:"Senses Shockwave"},
+  "Wukong":{type:"active",skill:"Camouflage"},
+  "Skyler":{type:"active",skill:"Riptide Rhythm"},
+  "Koda":{type:"active",skill:"Aurora Vision"},
+  "Dimitri":{type:"active",skill:"Healing Heartbeat"},
+  "Tatsuya":{type:"active",skill:"Rebel Rush"},
+  "Santino":{type:"active",skill:"Shape Splitter"},
+  "Kenta":{type:"active",skill:"Swordsman's Rage"},
+  "A124":{type:"active",skill:"Thrill of Battle"},
+  "Steffie":{type:"active",skill:"Painted Refuge"},
+  "Clu":{type:"active",skill:"Tracing Steps"},
+  "Xayne":{type:"active",skill:"Xtreme Encounter"},
+
+  "Kairos":{type:"passive",skill:"Defense Breaker"},
+  "Suzy":{type:"passive",skill:"Money Mark"},
+  "Sonia":{type:"passive",skill:"Nano Lifeshield"},
+  "Hayato":{type:"passive",skill:"Bushido"},
+  "Andrew":{type:"passive",skill:"Armor Specialist"},
+  "Rafael":{type:"passive",skill:"Dead Silent"},
+  "Moco":{type:"passive",skill:"Hacker's Eye"},
+  "Jota":{type:"passive",skill:"Sustained Raids"},
+  "Kelly":{type:"passive",skill:"Dash"},
+  "Laura":{type:"passive",skill:"Sharp Shooter"},
+  "Maxim":{type:"passive",skill:"Gluttony"},
+  "Miguel":{type:"passive",skill:"Crazy Slayer"},
+  "Nikita":{type:"passive",skill:"Firearms Expert"},
+  "Olivia":{type:"passive",skill:"Healing Touch"},
+  "Paloma":{type:"passive",skill:"Arms-dealing"},
+  "Shirou":{type:"passive",skill:"Damage Delivered"},
+  "Kapella":{type:"passive",skill:"Healing Song"},
+  "Dasha":{type:"passive",skill:"Partying On"},
+  "Luqueta":{type:"passive",skill:"Hat Trick"},
+  "Leon":{type:"passive",skill:"Buzzer Beater"},
+  "Thiva":{type:"passive",skill:"Vital Vibes"},
+  "Maro":{type:"passive",skill:"Falcon Fervor"},
+  "D-Bee":{type:"passive",skill:"Bullet Beats"},
+  "Otho":{type:"passive",skill:"Memory Mist"},
+  "Nairi":{type:"passive",skill:"Ice Iron"},
+  "Iris":{type:"passive",skill:"Wall Brawl"},
+  "K":{type:"passive",skill:"Master of All"},
+  "Joseph":{type:"passive",skill:"Nutty Movement"},
+  "Ford":{type:"passive",skill:"Iron Will"},
+  "Caroline":{type:"passive",skill:"Agility"},
+  "Misha":{type:"passive",skill:"Afterburner"},
+  "Wolfrahh":{type:"passive",skill:"Limelight"},
+  "Antonio":{type:"passive",skill:"Gangster's Spirit"},
+  "Nulla":{type:"passive",skill:"Character skill unavailable"},
+  "Primis":{type:"passive",skill:"Character skill unavailable"}
+};
+
+const SKILL_CATALOG=[
+  ["Ray","Raven Eye","active"],["Morse","Untraceable","active"],
+  ["Nero","Cryo Mind","active"],["Rin","Jade Ninja","active"],
+  ["Oscar","Valiant Dash","active"],["Kassie","Electro Therapy","active"],
+  ["Kairos","Defense Breaker","passive"],["Ryden","Spider Trap","active"],
+  ["Ignis","Flame Mirage","active"],["Suzy","Money Mark","passive"],
+  ["Sonia","Nano Lifeshield","passive"],["Orion","Crimson Crush","active"],
+  ["Alok","Drop the Beat","active"],["Chrono","Time Turner","active"],
+  ["Homer","Senses Shockwave","active"],["Wukong","Camouflage","active"],
+  ["Skyler","Riptide Rhythm","active"],["Koda","Aurora Vision","active"],
+  ["Dimitri","Healing Heartbeat","active"],["Tatsuya","Rebel Rush","active"],
+  ["Santino","Shape Splitter","active"],["Kenta","Swordsman's Rage","active"],
+  ["A124","Thrill of Battle","active"],["Steffie","Painted Refuge","active"],
+  ["Clu","Tracing Steps","active"],["Xayne","Xtreme Encounter","active"],
+  ["Hayato","Bushido","passive"],["Andrew","Armor Specialist","passive"],
+  ["Rafael","Dead Silent","passive"],["Moco","Hacker's Eye","passive"],
+  ["Jota","Sustained Raids","passive"],["Kelly","Dash","passive"],
+  ["Laura","Sharp Shooter","passive"],["Maxim","Gluttony","passive"],
+  ["Miguel","Crazy Slayer","passive"],["Nikita","Firearms Expert","passive"],
+  ["Olivia","Healing Touch","passive"],["Paloma","Arms-dealing","passive"],
+  ["Shirou","Damage Delivered","passive"],["Kapella","Healing Song","passive"],
+  ["Dasha","Partying On","passive"],["Luqueta","Hat Trick","passive"],
+  ["Leon","Buzzer Beater","passive"],["Thiva","Vital Vibes","passive"],
+  ["Maro","Falcon Fervor","passive"],["D-Bee","Bullet Beats","passive"],
+  ["Otho","Memory Mist","passive"],["Nairi","Ice Iron","passive"],
+  ["Iris","Wall Brawl","passive"],["K","Master of All","passive"],
+  ["Joseph","Nutty Movement","passive"],["Ford","Iron Will","passive"],
+  ["Caroline","Agility","passive"],["Misha","Afterburner","passive"],
+  ["Wolfrahh","Limelight","passive"],["Antonio","Gangster's Spirit","passive"]
+];
+
+const ALL_SKILLS_BY_TYPE={
+  active:[...new Set(SKILL_CATALOG.filter(x=>x[2]==="active").map(x=>x[0]))],
+  passive:[...new Set(SKILL_CATALOG.filter(x=>x[2]==="passive").map(x=>x[0]))]
+};
+
+
+
+const LEGENDARY_PRESETS={
+ "دعم الفريق":["Alok","Kassie","Sonia","Kairos"],
+ "الحركة والبقاء":["Chrono","Kairos","Sonia","Suzy"],
+ "استكشاف ومعلومات":["Koda","Kairos","Sonia","Suzy"]
+};
+
+const TOOLS_DATA={
+ guide:{
+ title:"أداة تلوين النص",
+ body:`<p class="tool-help">اكتب النص ثم استخدم [b] للعريض، [i] للمائل، و[c] لإضافة اللون.</p>
+ <div class="color-text-tool">
+  <label>النص<textarea id="colorTextInput" rows="5" placeholder="اكتب النص هنا..."></textarea></label>
+  <div class="color-tool-row">
+   <button class="secondary-btn" type="button" onclick="setColorTag('b')">[b] عريض</button>
+   <button class="secondary-btn" type="button" onclick="setColorTag('i')">[i] مائل</button>
+   <button class="secondary-btn" type="button" onclick="setColorTag('c')">[c] لون</button>
+  </div>
+  <label>اختيار اللون<input id="bbColorPicker" type="color" value="#FF8A00"></label>
+  <div class="preset-colors">
+   <button type="button" class="swatch" data-color="#FF0000" style="background:#FF0000"></button>
+   <button type="button" class="swatch" data-color="#FF7A00" style="background:#FF7A00"></button>
+   <button type="button" class="swatch" data-color="#FFD400" style="background:#FFD400"></button>
+   <button type="button" class="swatch" data-color="#00C853" style="background:#00C853"></button>
+   <button type="button" class="swatch" data-color="#00B8D4" style="background:#00B8D4"></button>
+   <button type="button" class="swatch" data-color="#2979FF" style="background:#2979FF"></button>
+   <button type="button" class="swatch" data-color="#7C4DFF" style="background:#7C4DFF"></button>
+   <button type="button" class="swatch" data-color="#FF4081" style="background:#FF4081"></button>
+   <button type="button" class="swatch" data-color="#FFFFFF" style="background:#FFFFFF"></button>
+   <button type="button" class="swatch" data-color="#000000" style="background:#000000"></button>
+  </div>
+  <label>الناتج<textarea id="colorTextOutput" rows="4" readonly></textarea></label>
+  <div class="tool-actions">
+   <button class="primary-btn" type="button" onclick="generateColorText()">إنشاء</button>
+   <button class="secondary-btn" type="button" onclick="copyColorText()">نسخ</button>
+   <button class="secondary-btn" type="button" onclick="clearColorText()">مسح</button>
+  </div>
+  <div id="colorTextPreview" class="guide-result">المعاينة ستظهر هنا...</div>
+ </div>`
+},
+
+ converter:{title:"محول الحساسية",body:`
+   <p class="tool-help">حوّل قيمة الحساسية باستخدام معامل تختاره.</p>
+   <label>الحساسية الحالية<input id="convBase" type="number" min="0" max="200" value="100"></label>
+   <label>معامل التحويل<input id="convFactor" type="number" min="0.1" max="3" step="0.1" value="1"></label>
+   <button class="primary-btn" type="button" onclick="runConverter()">تحويل</button><div id="toolResult"></div>`},
+
+ device:{title:"معلومات الجهاز",body:`<div id="deviceResult" class="result-list"></div>
+   <button class="primary-btn" type="button" onclick="refreshDeviceInfo()">تحديث المعلومات</button>`},
+
+ hud:{title:"صانع HUD",body:`
+   <p class="tool-help">اسحب الأزرار داخل المساحة ثم احفظ التخطيط.</p>
+   <div id="hudCanvas" class="hud-canvas">
+     <button class="hud-btn hud-fire" draggable="true" type="button">إطلاق</button>
+     <button class="hud-btn hud-scope" draggable="true" type="button">سكوب</button>
+     <button class="hud-btn hud-jump" draggable="true" type="button">قفز</button>
+     <button class="hud-btn hud-crouch" draggable="true" type="button">انحناء</button>
+   </div>
+   <button class="primary-btn" type="button" onclick="saveHud()">حفظ HUD</button>`},
+
+ dpi:{title:"حاسبة DPI",body:`
+   <p class="tool-help">الحساب للتجربة فقط ولا يغيّر إعدادات جهازك.</p>
+   <label>DPI الحالي<input id="dpiBase" type="number" min="1" value="400"></label>
+   <label>المعامل<input id="dpiFactor" type="number" min="0.1" max="3" step="0.1" value="1"></label>
+   <button class="primary-btn" type="button" onclick="runDpi()">احسب</button><div id="toolResult"></div>`},
+
+ sensitivity:{title:"حاسبة الحساسية",body:`
+   <label>النمط<select id="sensStyle"><option value="balanced">متوازن</option><option value="rush">سريع</option><option value="sniper">دقيق</option></select></label>
+   <label>الحساسية العامة<input id="sensBase" type="number" min="0" max="200" value="100"></label>
+   <button class="primary-btn" type="button" onclick="runSensitivity()">إنشاء القيم</button><div id="toolResult"></div>`},
+
+ skills:{title:"منشئ المهارات الأسطورية",body:`
+   <p class="tool-help">التركيبة الصحيحة: 1 مهارة نشطة فقط + 3 مهارات ثانوية (Passive). القوائم منفصلة حسب تصنيف Garena.</p>
+   <div class="skill-build-section">
+    <h3>⚡ المهارة النشطة</h3>
+    <label>اختر الشخصية النشطة<select id="activeSkill"></select></label>
+   </div>
+   <div class="skill-build-section">
+    <h3>◈ المهارات الثانوية — 3</h3>
+    <div class="skill-grid">
+      <label>الثانوية 1<select id="passive1"></select></label>
+      <label>الثانوية 2<select id="passive2"></select></label>
+      <label>الثانوية 3<select id="passive3"></select></label>
+    </div>
+   </div>
+   <div class="skill-presets">
+    <button class="secondary-btn" type="button" onclick="applySkillPreset('دعم الفريق')">دعم الفريق</button>
+    <button class="secondary-btn" type="button" onclick="applySkillPreset('الحركة والبقاء')">الحركة والبقاء</button>
+    <button class="secondary-btn" type="button" onclick="applySkillPreset('استكشاف ومعلومات')">استكشاف ومعلومات</button>
+   </div>
+   <button class="primary-btn" type="button" onclick="buildLegendary()">✨ إنشاء التركيبة</button>
+   <div id="skillResult" class="guide-result"></div>`},
+
+ reset:{title:"إدارة الإعدادات",body:`
+   <p class="tool-help">تحكم في البيانات المحلية التي تحفظها أدوات MODY PANEL.</p>
+   <button class="secondary-btn" type="button" onclick="clearPresets()">مسح Presets</button>
+   <button class="secondary-btn" type="button" onclick="clearHud()">مسح HUD</button>
+   <button class="secondary-btn" type="button" onclick="clearLegendary()">مسح Builds</button>
+   <button class="primary-btn" type="button" onclick="resetTools()">إعادة ضبط كل الأدوات</button>
+   <div id="resetResult" class="tool-result"></div>`},
+
+ presets:{title:"حفظ الإعدادات",body:`
+   <label>اسم الإعداد<input id="presetName" maxlength="30" placeholder="مثال: إعدادي"></label>
+   <label>الحساسية العامة<input id="presetSens" type="number" min="0" max="200" value="100"></label>
+   <button class="primary-btn" type="button" onclick="savePreset()">حفظ الإعداد</button>
+   <div id="presetList" class="result-list"></div>`},
+
+ share:{title:"مشاركة الإعدادات",body:`
+   <label>اسم اللاعب<input id="shareName" maxlength="30" placeholder="اسمك"></label>
+   <label>الحساسية<input id="shareSens" type="number" min="0" max="200" value="100"></label>
+   <button class="primary-btn" type="button" onclick="makeShareText()">إنشاء نص المشاركة</button>
+   <textarea id="shareOutput" class="share-output" readonly></textarea>
+   <button class="secondary-btn" type="button" onclick="copyShare()">نسخ</button>`}
+};
+
+
 function openTool(type){
   const t=TOOLS_DATA[type];if(!t)return;
   let modal=document.getElementById("toolModal");
@@ -1121,3 +1400,4 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 </script></body>
 </html>
+
