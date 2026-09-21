@@ -693,12 +693,33 @@ function applyAccount(account){
 }
 function openProfile(){
   const account=JSON.parse(localStorage.getItem("modyPanelAccount")||"null");
-  if(!account){openAuth("login");return;}
+  const logged=!!liveAuthToken && localStorage.getItem("modyPanelLoggedIn")==="true";
+  if(!account || !logged){
+    openAuth("login");
+    return;
+  }
+
+  // Open the existing modal in profile mode instead of showing the create-account screen.
+  openAuth("create");
+  document.getElementById("authTitle").textContent="YOUR PROFILE";
+  document.getElementById("authSubtitle").textContent="بيانات حسابك المسجل دخولك به.";
   document.getElementById("username").value=account.username||"";
   document.getElementById("playerId").value=account.playerId||"";
   document.getElementById("email").value=account.email||"";
   document.getElementById("password").value="";
-  openAuth("create");
+  document.getElementById("authSubmit").style.display="none";
+  document.querySelector("#authOverlay .upload-avatar")?.style.setProperty("pointer-events","none");
+  ["username","playerId","email","password"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.readOnly=true;
+  });
+  const avatar=account.avatar;
+  const preview=document.getElementById("avatarPreview");
+  const placeholder=document.getElementById("avatarPlaceholder");
+  if(preview && placeholder){
+    if(avatar){preview.src=avatar;preview.style.display="block";placeholder.style.display="none";}
+    else {preview.style.display="none";placeholder.style.display="block";}
+  }
 }
 
 async function restoreLiveSession(){
