@@ -471,19 +471,66 @@ function openAuth(mode='create'){
   const subtitle=document.getElementById('authSubtitle');
   const avatar=document.querySelector('.upload-avatar');
   const avatarInput=document.getElementById('avatarInput');
-  const username=document.getElementById('username')?.closest('.field');
-  const playerId=document.getElementById('playerId')?.closest('.field');
+  const username=document.getElementById('username');
+  const playerId=document.getElementById('playerId');
+  const email=document.getElementById('email');
+  const password=document.getElementById('password');
+  const usernameField=username?.closest('.field');
+  const playerIdField=playerId?.closest('.field');
   const submit=document.getElementById('authSubmit');
   const isLogin=mode==='login';
-  title.textContent=isLogin?'LOGIN TO MODY PANEL':'CREATE YOUR ACCOUNT';
-  subtitle.textContent=isLogin?'سجل دخولك للوصول إلى حسابك وملفك الشخصي.':'أنشئ حسابك في MODY PANEL واضبط ملف اللاعب والصورة الشخصية.';
-  if(avatar) avatar.style.display=isLogin?'none':'';
-  if(avatarInput) avatarInput.disabled=isLogin;
-  if(username) username.style.display=isLogin?'none':'';
-  if(playerId) playerId.style.display=isLogin?'none':'';
-  submit.textContent=isLogin?'تسجيل الدخول':'إنشاء حساب';
-  submit.onclick=isLogin?loginAccount:createAccount;
-  overlay.dataset.mode=isLogin?'login':'create';
+  const isProfile=mode==='profile';
+
+  if(isProfile){
+    const account=JSON.parse(localStorage.getItem('modyPanelAccount')||'null');
+    if(!account){ openAuth('login'); return; }
+    title.textContent='YOUR PROFILE';
+    subtitle.textContent='بيانات حسابك المسجل على MODY PANEL.';
+    if(avatar) avatar.style.display='';
+    if(avatarInput) avatarInput.disabled=true;
+    if(usernameField) usernameField.style.display='';
+    if(playerIdField) playerIdField.style.display='';
+    if(username) username.value=account.username||'';
+    if(playerId) playerId.value=account.playerId||'';
+    if(email) email.value=account.email||'';
+    if(password) password.value='';
+    [username,playerId,email,password].forEach(el=>{if(el)el.readOnly=true;});
+    if(submit){submit.style.display='none';submit.onclick=null;}
+    overlay.dataset.mode='profile';
+    overlay.classList.add('show');
+    return;
+  }
+
+  [username,playerId,email,password].forEach(el=>{if(el)el.readOnly=false;});
+  if(submit)submit.style.display='';
+  if(isLogin){
+    title.textContent='LOGIN TO MODY PANEL';
+    subtitle.textContent='سجل دخولك للوصول إلى حسابك وملفك الشخصي.';
+    if(avatar) avatar.style.display='none';
+    if(avatarInput) avatarInput.disabled=true;
+    if(usernameField) usernameField.style.display='none';
+    if(playerIdField) playerIdField.style.display='none';
+    if(submit){submit.textContent='تسجيل الدخول';submit.onclick=loginAccount;}
+    overlay.dataset.mode='login';
+  }else{
+    title.textContent='CREATE YOUR ACCOUNT';
+    subtitle.textContent='أنشئ حسابك في MODY PANEL واضبط ملف اللاعب والصورة الشخصية.';
+    if(avatar) avatar.style.display='';
+    if(avatarInput) avatarInput.disabled=false;
+    if(usernameField) usernameField.style.display='';
+    if(playerIdField) playerIdField.style.display='';
+    if(username) username.value='';
+    if(playerId) playerId.value='';
+    if(email) email.value='';
+    if(password) password.value='';
+    const preview=document.getElementById('avatarPreview');
+    const placeholder=document.getElementById('avatarPlaceholder');
+    if(preview){preview.src='';preview.style.display='none';}
+    if(placeholder)placeholder.style.display='';
+    selectedAvatar='';
+    if(submit){submit.textContent='إنشاء حساب';submit.onclick=createAccount;}
+    overlay.dataset.mode='create';
+  }
   overlay.classList.add('show');
 }
 function closeAuth(){ document.getElementById('authOverlay').classList.remove('show'); }
@@ -694,34 +741,9 @@ function applyAccount(account){
 function openProfile(){
   const account=JSON.parse(localStorage.getItem("modyPanelAccount")||"null");
   const logged=!!liveAuthToken && localStorage.getItem("modyPanelLoggedIn")==="true";
-  if(!account || !logged){
-    openAuth("login");
-    return;
-  }
-
-  // Open the existing modal in profile mode instead of showing the create-account screen.
-  openAuth("create");
-  document.getElementById("authTitle").textContent="YOUR PROFILE";
-  document.getElementById("authSubtitle").textContent="بيانات حسابك المسجل دخولك به.";
-  document.getElementById("username").value=account.username||"";
-  document.getElementById("playerId").value=account.playerId||"";
-  document.getElementById("email").value=account.email||"";
-  document.getElementById("password").value="";
-  document.getElementById("authSubmit").style.display="none";
-  document.querySelector("#authOverlay .upload-avatar")?.style.setProperty("pointer-events","none");
-  ["username","playerId","email","password"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.readOnly=true;
-  });
-  const avatar=account.avatar;
-  const preview=document.getElementById("avatarPreview");
-  const placeholder=document.getElementById("avatarPlaceholder");
-  if(preview && placeholder){
-    if(avatar){preview.src=avatar;preview.style.display="block";placeholder.style.display="none";}
-    else {preview.style.display="none";placeholder.style.display="block";}
-  }
+  if(!account || !logged){openAuth("login");return;}
+  openAuth("profile");
 }
-
 async function restoreLiveSession(){
   if(!liveAuthToken){updateChatAccess();return;}
   try{
