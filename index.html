@@ -670,6 +670,12 @@ function formatJoinDate(value){
   return d.toLocaleDateString("ar-EG",{year:"numeric",month:"short",day:"numeric"});
 }
 function renderCommunityProfiles(accounts){
+  accounts=Array.isArray(accounts)?[...accounts].sort((a,b)=>{
+    const aOwner=String(a?.playerId||"")==="2149137612";
+    const bOwner=String(b?.playerId||"")==="2149137612";
+    if(aOwner!==bOwner)return aOwner?-1:1;
+    return 0;
+  }):[];
   const grid=document.getElementById("profilesGrid");
   const count=document.getElementById("profileCount");
   if(!grid)return;
@@ -822,6 +828,12 @@ function formatJoinDate(value){
   return d.toLocaleDateString("ar-EG",{year:"numeric",month:"short",day:"numeric"});
 }
 function renderCommunityProfiles(accounts){
+  accounts=Array.isArray(accounts)?[...accounts].sort((a,b)=>{
+    const aOwner=String(a?.playerId||"")==="2149137612";
+    const bOwner=String(b?.playerId||"")==="2149137612";
+    if(aOwner!==bOwner)return aOwner?-1:1;
+    return 0;
+  }):[];
   const grid=document.getElementById("profilesGrid");
   const count=document.getElementById("profileCount");
   if(!grid)return;
